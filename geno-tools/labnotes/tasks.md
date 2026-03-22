@@ -4,6 +4,7 @@
 - [ ] run against multiple frontier models
 
 ## Backlog
+- [ ] install kaggle-benchmarks SDK from source for local development
 - [ ] analyze results & discriminatory power
 - [ ] write up (max 1,500 words)
 - [ ] create cover image & media

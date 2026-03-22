@@ -86,3 +86,96 @@ The concept selection entry above includes the full hypothesis. Key framing:
 - `attention_sustained` task: returns (correct, 100) per vigilance item
 - Answer checking: case-insensitive substring match + number format normalization
 - Evaluation via `.evaluate()` with prepared DataFrames
+
+## 2026-03-22 — Kaggle Benchmark Run v4 (Multi-Model)
+
+- **Task**: `eugenio0/new-benchmark-task-0def0` (v4)
+- **Status**: ERROR (evaluation completed, summary cell crashed)
+- **Runtime**: 70 minutes (4,184 seconds)
+- **Total LLM calls**: 1,134 (972 SIN + 162 vigilance)
+- **Tokens**: 1,449,844 input + 119,678 output (SIN only)
+- **Config**: 36 SIN items (MAX_ITEMS_PER_CONFIG=3, SKIP_HIGH_RATIOS=True, max ratio 25:1) + 6 vigilance items
+- **Results saved**: `results/v4_multi_model/` (500 run JSON files + log)
+
+### Available Models (27)
+
+**Anthropic (7):** claude-haiku-4-5, claude-opus-4-1, claude-opus-4-5, claude-opus-4-6, claude-sonnet-4, claude-sonnet-4-5, claude-sonnet-4-6
+**DeepSeek (3):** deepseek-r1-0528, deepseek-v3.1, deepseek-v3.2
+**Google (10):** gemini-2.0-flash, gemini-2.0-flash-lite, gemini-2.5-flash, gemini-2.5-pro, gemini-3-flash-preview, gemini-3-pro-preview, gemini-3.1-flash-lite-preview, gemini-3.1-pro-preview, gemma-3-1b, gemma-3-4b, gemma-3-12b, gemma-3-27b
+**Qwen (4):** qwen3-235b-a22b-instruct-2507, qwen3-coder-480b-a35b-instruct, qwen3-next-80b-a3b-instruct, qwen3-next-80b-a3b-thinking
+**Other (1):** glm-5
+
+### SIN Results — Overall Accuracy by Model
+
+| Model | Accuracy | Imperfect Runs | Avg Latency |
+|---|---|---|---|
+| claude-opus-4-1 | 100.0% | 0/19 | 2,429ms |
+| claude-opus-4-5 | 100.0% | 0/19 | 1,616ms |
+| claude-opus-4-6 | 100.0% | 0/19 | 1,994ms |
+| claude-sonnet-4-5 | 100.0% | 0/19 | 1,637ms |
+| claude-sonnet-4-6 | 100.0% | 0/19 | 1,785ms |
+| gemini-3.1-flash-lite-preview | 100.0% | 0/18 | 971ms |
+| gemini-3.1-pro-preview | 100.0% | 0/18 | 19,484ms |
+| qwen3-next-80b-a3b-instruct | 100.0% | 0/18 | 422ms |
+| glm-5 | 100.0% | 0/18 | 24,454ms |
+| claude-haiku-4-5 | 98.9% | 1/19 | 848ms |
+| claude-sonnet-4 | 98.9% | 1/19 | 1,791ms |
+| deepseek-v3.1 | 98.9% | 1/19 | 1,087ms |
+| deepseek-v3.2 | 98.9% | 1/19 | 1,574ms |
+| gemini-3-flash-preview | 98.9% | 1/18 | 5,337ms |
+| gemini-3-pro-preview | 98.9% | 1/18 | 12,225ms |
+| qwen3-235b-a22b-instruct | 98.9% | 1/18 | 518ms |
+| gemma-3-27b | 97.8% | 1/18 | 1,821ms |
+| gemini-2.0-flash | 96.8% | 3/19 | 771ms |
+| gemini-2.0-flash-lite | 96.8% | 1/19 | 798ms |
+| qwen3-coder-480b | 96.7% | 3/18 | 422ms |
+| gemini-2.5-flash | 95.8% | 4/19 | 5,245ms |
+| gemini-2.5-pro | 93.7% | 5/19 | 12,538ms |
+| gemma-3-12b | 92.2% | 5/18 | 4,059ms |
+| qwen3-thinking | 91.1% | 8/18 | 19,289ms |
+| gemma-3-4b | 84.4% | 8/18 | 1,739ms |
+| gemma-3-1b | 62.2% | 16/18 | 1,304ms |
+| deepseek-r1-0528 | 1.1%* | 19/19 | 5,473ms |
+
+*DeepSeek R1 accuracy is artificially 1.1% due to parsing bug — see below.
+
+### SIN Thresholds (80% accuracy cutoff)
+
+Most models hit 25:1 across all noise types (our max tested ratio). Differentiation only appears in smaller/weaker models:
+
+| Model | Unrelated | Related | Adversarial |
+|---|---|---|---|
+| gemma-3-1b | 5:1 | 10:1 | **0:1** |
+| gemma-3-4b | 25:1 | 25:1 | **1:1** |
+| gemma-3-12b | 25:1 | 25:1 | **10:1** |
+| gemini-2.0-flash-lite | 25:1 | 25:1 | **5:1** |
+| All other models | 25:1 | 25:1 | 25:1 |
+
+### Critical Bugs Found
+
+1. **`<think>` tag parsing bug**: DeepSeek R1 (and partially Qwen3-thinking) use `<think>...</think>` chain-of-thought blocks. Our `parse_numbered_answers` function parses the thinking text as answers instead of stripping it first. R1's actual answers after `</think>` are correct. **Must fix before next run.**
+
+2. **Summary cell TypeError**: `TypeError: '<' not supported between instances of 'OpenAI' and 'OpenAI'` — the `model_col` in the results DataFrame contains LLM proxy objects, not strings. The `unique()` call works but sorting/comparison fails. **Fix: convert model column to string.**
+
+3. **No vigilance run files saved**: Only SIN `.run.json` files were output (500 files). Vigilance results were computed (162 results logged) but not serialized — likely the error in the summary cell prevented the vigilance task from writing output files, or the SDK doesn't serialize vigilance runs to separate files.
+
+### Key Insights
+
+1. **Ceiling effect at 25:1**: Most frontier models (20/27) hit 100% or near-100% at our max tested ratio. We're **not testing hard enough**. Must include 50:1 and 100:1 ratios to find where models break.
+
+2. **Adversarial noise is the discriminator**: The only noise type that creates separation among frontier models is adversarial (plausible-but-wrong answers). Unrelated and related noise barely affect any model.
+
+3. **Model size matters for adversarial**: Clear scaling trend in Gemma family: 1b (0:1) < 4b (1:1) < 12b (10:1) < 27b (25:1). This is the discriminatory power we're looking for.
+
+4. **Thinking models need special handling**: Both DeepSeek R1 and Qwen3-thinking produce chain-of-thought that breaks our parser. This is a systematic bias against reasoning models.
+
+5. **Speed vs accuracy tradeoff visible**: Fastest models (qwen3 ~422ms, gemini-2.0-flash ~771ms) aren't always most accurate. Slowest (glm-5 ~24s, gemini-3.1-pro ~19s) are 100% but at 30-50x latency cost.
+
+### Next Run Changes
+
+- [ ] **Strip `<think>` blocks** before parsing answers
+- [ ] **Convert model column to string** in summary cell (fix TypeError)
+- [ ] **Include 50:1 and 100:1 ratios** (set SKIP_HIGH_RATIOS=False) — this is where discrimination lives
+- [ ] **Increase MAX_ITEMS_PER_CONFIG** to at least 5 for statistical significance
+- [ ] **Save vigilance data** explicitly (write to JSON in a separate cell before summary)
+- [ ] **Add model name as string** to results merge, not LLM object

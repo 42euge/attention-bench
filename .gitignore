@@ -6,3 +6,11 @@ __pycache__/
 dist/
 build/
 .ipynb_checkpoints/
+.venv/
+venv/
+kaggle-benchmarks/
+*.run.json
+*.task.json
+data/signal_in_noise.json
+data/vigilance.json
+data/manifest.json

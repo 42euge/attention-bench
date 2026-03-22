@@ -1,0 +1,8 @@
+# Kaggle Benchmarks SDK — install from source:
+#   git clone https://github.com/Kaggle/kaggle-benchmarks.git
+#   pip install -e ./kaggle-benchmarks
+# Or use a Kaggle notebook where it's pre-installed.
+
+pandas>=2.0
+numpy>=1.24
+python-dotenv>=1.0

@@ -179,3 +179,63 @@ Most models hit 25:1 across all noise types (our max tested ratio). Differentiat
 - [ ] **Increase MAX_ITEMS_PER_CONFIG** to at least 5 for statistical significance
 - [ ] **Save vigilance data** explicitly (write to JSON in a separate cell before summary)
 - [ ] **Add model name as string** to results merge, not LLM object
+
+## 2026-03-22 — Kaggle Benchmark Run v5 (Orthogonal, Full Ratios) — SUCCESS
+
+- **Task**: `eugenio0/new-benchmark-task-0def0` (v5)
+- **Status**: COMPLETE (all cells ran, no crashes)
+- **Runtime**: 14 minutes (833 seconds) — down from 70 min in v4
+- **LLM calls**: 336 (288 SIN + 48 vigilance)
+- **Config**: 36 SIN items (2 per config × 6 ratios × 3 noise types) + 6 vigilance items
+- **Results saved**: `results/v5_orthogonal/` (336 run JSONs + log + plot)
+
+### Fixes Validated
+- Think-tag stripping works (DeepSeek R1 no longer 1.1%)
+- String model_name column — no more TypeError
+- Plot generated successfully
+
+### Models (8 orthogonal)
+gemma-3-1b, gemma-3-4b, gemma-3-12b, gemma-3-27b, claude-haiku-4-5, deepseek-r1-0528, gemini-2.5-flash, claude-opus-4-6
+
+### SIN Thresholds (80% accuracy cutoff) — NOW WITH 50:1 AND 100:1
+
+| Model | Unrelated | Related | Adversarial |
+|---|---|---|---|
+| claude-opus-4-6 | **100:1** | **100:1** | **100:1** |
+| claude-haiku-4-5 | **100:1** | **100:1** | **100:1** |
+| deepseek-r1-0528 | **100:1** | **100:1** | 50:1 |
+| gemini-2.5-flash | **100:1** | **100:1** | **100:1** |
+| gemma-3-27b | **100:1** | **100:1** | **100:1** |
+| gemma-3-12b | **100:1** | **100:1** | 10:1 |
+| gemma-3-4b | **100:1** | **100:1** | 1:1 |
+| gemma-3-1b | 5:1 | 10:1 | **0:1** |
+
+### Key Findings
+
+1. **Adversarial noise is THE discriminator**: Unrelated and related noise barely affect any model even at 100:1. But adversarial noise creates a beautiful scaling ladder in the Gemma family: 1b(0:1) → 4b(1:1) → 12b(10:1) → 27b(100:1).
+
+2. **DeepSeek R1 think-stripping partially works**: R1 no longer scores 0%, but shows erratic accuracy (30-100% per cell). The thinking model's responses after `</think>` sometimes have formatting issues. Adversarial threshold is 50:1 — interesting that a reasoning model struggles more with adversarial noise.
+
+3. **Gemini 2.5 Flash has slight noise sensitivity**: ~90% across most configs, never drops below 80% but consistently below 100%. Subtle but real attention degradation.
+
+4. **Frontier models (Opus 4-6, Haiku 4-5) are ceiling**: Perfect 100% across all conditions including 100:1 adversarial. The benchmark needs to go harder to differentiate these.
+
+5. **Vigilance results show real discrimination**:
+   - gemma-3-1b: catastrophic (1% country ID, 0% misspelling oddball)
+   - gemma-3-4b: partial (91% country, 0% misspelling, 32% number)
+   - gemma-3-27b: one surprising gap (0% misspelling normal, but 100% oddball — possible parsing issue)
+   - Frontier models: 98-100% across all tasks
+   - DeepSeek R1: 88% on number_extraction oddball — reasoning model struggles with oddball disruption
+
+### Investigation: Anomalies Resolved
+
+**gemma-3-27b 0% misspelling normal**: The model returns the **correct spelling** ("sufficient") instead of the misspelled word ("sufficent"). The prompt says "identify the misspelled word" which is ambiguous — could mean "point out which word" (return misspelling) or "what word was meant" (return correct). gemma-3-4b does the same (0%). gemma-3-12b returns the misspelling correctly (100%). Claude, Gemini, and R1 all return the misspelling. This is a **task comprehension** issue specific to certain model sizes, not an attention failure. The oddball variant scores 100% because the oddball task (number extraction) doesn't have this ambiguity.
+
+**DeepSeek R1 erratic SIN scores**: Two distinct issues:
+1. **Preamble parsing bug** (fixable): R1 adds lines like "Here are the answers based on the text:" before numbered answers. Our parser counted this as answer #1, shifting everything off by one. Fix: only accept lines starting with `^\d+[\.\)\:\-]`.
+2. **Genuine adversarial attention failure** (real signal): On param_id 11, R1 picked "3,100 meters" and "bathozine" from adversarial noise instead of correct "2,400 meters" and "kerovazine". The reasoning model got distracted by plausible-but-wrong answers despite its chain-of-thought. This is a legitimate finding — adversarial noise can fool even reasoning models.
+
+**Parser v6 fix**: `parse_numbered_answers` now requires lines to start with a number prefix (`1.`, `2)`, `3:`, etc.) and skips preamble. Falls back to all lines if no numbered lines found.
+
+### Version Numbering
+The benchmark task `eugenio0/new-benchmark-task-0def0` increments version on each push. Other benchmarks running simultaneously may also increment the version counter. The slug is stable — version numbers are informational only and don't affect the push/pull workflow.

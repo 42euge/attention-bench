@@ -44,7 +44,7 @@ Each notebook in `tasks/` is a standalone Kaggle kernel. It must:
 - Generate its own data inline (fixed seed for reproducibility)
 - Define its own helper functions (parsing, answer checking)
 - Define exactly one `@kbench.task` function
-- Run `.evaluate(llm=kbench.llm, evaluation_data=df)` against the default model
+- Run `.evaluate(llm=[kbench.llm], evaluation_data=df)` — note: `llm` must be a **list** (the SDK iterates over it as a grid parameter)
 - Include analysis/plotting at the end
 
 **Do NOT** create shared libraries, external data dependencies, or combined benchmark notebooks. Each task notebook must run independently on Kaggle with zero external files.

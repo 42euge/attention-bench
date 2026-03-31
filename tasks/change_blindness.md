@@ -1,78 +1,49 @@
-# Change Blindness — Detail Tracking Across Disruptions
+# Change Blindness
 
 ## What it tests
 
-Can a model detect subtle factual changes between two versions of a passage when separated by an unrelated "disruptor" paragraph? This mirrors the human phenomenon of **change blindness** — failing to notice changes when they coincide with a visual interruption.
+Can a model spot what changed between two versions of code or a ticket when there's unrelated stuff in between?
+
+## The setup
+
+Two categories of passages:
+
+**code-development** — actual code snippets:
+- Retry logic, LRU cache, rate limiter
+- Minor change = a number tweak (`max_retries=3` → `5`)
+- Major change = a logic bug (`raise` → `return {}`, `popitem(last=False)` → `last=True`)
+
+**code-task** — tickets/specs:
+- Search feature, DB migration
+- Minor change = an SLA number (`200ms` → `500ms`)
+- Major change = a safety removal (feature flag → ship direct, keep fallback → drop immediately)
+
+Between Version A and Version B, 0, 1, or 3 **disruptors** are inserted (standup notes, Slack messages, wiki updates — totally unrelated).
+
+## What to expect when you run it
+
+The notebook outputs a 3×3 table: **change type** (minor, major, none) × **disruptor count** (0, 1, 3).
+
+**Good results look like:**
+- `none` row should be ~100% — model correctly says NO CHANGE when nothing changed (low false alarm rate)
+- `major` row should be higher than `minor` — logic bugs are easier to spot than number tweaks
+- Numbers should drop as disruptors increase (0 → 1 → 3) — that's the "blindness" effect
+- If there's no drop with disruptors, the task isn't hard enough for this model
+
+**What discriminates models:**
+- Weak models miss minor changes even with 0 disruptors
+- Strong models maintain detection through 3 disruptors
+- The interesting signal is the **drop** from 0 to 3 disruptors — how much does interference hurt?
+
+**Metrics printed:**
+- Detection rate by change type × disruptor count (the main table)
+- False alarm rate (saying something changed when nothing did)
+- Per-change-type baseline vs 3-disruptor comparison with the drop
+
+**Plot:** Line chart showing detection rate vs disruptor count for minor, major, and false alarm.
 
 ## Design
 
-### Stimulus structure
+5 passages × 3 change types (minor, major, none) × 3 disruptor levels (0, 1, 3) = **45 items total**.
 
-Each trial presents two versions of a factual passage (Version A → Version B). Between them, 0, 1, or 3 unrelated "disruptor" paragraphs may be inserted as an interlude.
-
-```
-=== VERSION A ===
-<original passage>
-
-=== INTERLUDE ===        ← 0, 1, or 3 disruptor paragraphs
-<unrelated text>
-
-=== VERSION B ===
-<passage with one change>
-```
-
-The model must identify what changed (or say "NO CHANGE" if nothing did).
-
-### Independent variables (factorial)
-
-| Variable | Levels | Purpose |
-|---|---|---|
-| **Change magnitude** | minor, major, none | Minor = a number or name swap. Major = a causal claim reversal. None = identical passages (control). |
-| **Disruptor count** | 0, 1, 3 | More disruptors = more interference between encoding and comparison. |
-
-This gives a 3×3 factorial = 9 conditions per passage.
-
-### Passages
-
-5 fictional-but-realistic passages across domains: solar energy, marine biology, archaeology, neuroscience, climate science. Each has a pre-written minor change (e.g., "847 megawatts → 634 megawatts") and major change (e.g., "low humidity and sunlight → persistent cloud cover and rainfall").
-
-**Total items:** 5 passages × 9 conditions = 45 items.
-
-### Disruptors
-
-3 unrelated paragraphs (board games, Japanese joinery, helium supply) randomly sampled to fill the interlude. These are thematically unrelated to any passage, maximizing attentional interference.
-
-## Task definition
-
-```python
-@kbench.task(name="change_blindness")
-def change_blindness(llm, prompt, expected, change_type, disruptor_count) -> bool:
-```
-
-- Returns `True`/`False` (correct/incorrect)
-- For "NO CHANGE" trials: checks if model output contains "no change"
-- For change trials: splits expected answer on "changed to" and checks both old and new values appear in the response
-
-## Metrics
-
-| Metric | What it reveals |
-|---|---|
-| **Detection rate by change type** | Are major (causal) changes easier to spot than minor (numeric) ones? |
-| **Detection rate by disruptor count** | Does interleaved text degrade change detection? |
-| **False alarm rate** | Does the model hallucinate changes when none exist? |
-| **Detection drop** | Baseline (0 disruptors) minus 3-disruptor accuracy — the "blindness" effect size |
-
-## Confidence calibration (bonus)
-
-Each prompt asks the model to self-rate confidence (1-5). This enables:
-- **Reliability diagram** — actual accuracy vs. stated confidence
-- **Expected Calibration Error (ECE)** — aggregate miscalibration score
-- **Overconfidence rate** — wrong answers rated 4-5
-- **Underconfidence rate** — correct answers rated 1-2
-
-## Expected findings
-
-- Minor changes should be harder to detect than major changes
-- More disruptors should reduce detection rate (the change blindness effect)
-- Weaker models may show higher false alarm rates
-- Models may be systematically overconfident on wrong answers
+Scoring checks if the model mentions the key values from both sides of the change (e.g., both "3" and "5" for `max_retries=3→5`). Falls back to word overlap matching for non-numeric changes.

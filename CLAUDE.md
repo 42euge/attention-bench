@@ -55,3 +55,17 @@ Each notebook in `tasks/` is a standalone Kaggle kernel. It must:
 - No combined "master" benchmark notebook — Kaggle groups tasks into benchmarks via the UI
 - No `notebooks/` directory — all task notebooks live in `tasks/`
 - No external JSON data files that notebooks depend on — generate data inline
+
+### Deploying to Kaggle
+
+The repo must be public on GitHub. To deploy task notebooks:
+
+1. Create a Task at https://www.kaggle.com/benchmarks/tasks/new
+2. In the Kaggle notebook editor: **File → Link to GitHub** → select the notebook from `42euge/attention-bench`
+3. To pull updates after pushing to GitHub: **File → Link to GitHub** again — it detects new commits and offers to pull
+
+The `kaggle kernels push` CLI uploads to Kaggle **Code** (regular notebooks), NOT to Benchmarks. Do not use it for benchmark tasks.
+
+### Passage style
+
+Keep passages short and everyday (bakery, bridge, farm — not dense scientific text). A human should be able to read a passage and verify the change in under 10 seconds.

@@ -112,3 +112,74 @@ Total: 295 top-level items. All notebooks parse, generate data, and import corre
 - Cycle 10: Create media assets (competition requires cover image)
 - Cycle 11: Final end-to-end review of everything
 - Cycle 12: Update CLAUDE.md, clean up repo, prepare summary for user
+
+## Cycle 9 — IMPLEMENT (07:30 UTC)
+
+**Completed:**
+- Writeup strengthened from 1,110 → 1,386 words (114 under limit)
+- Added cognitive science citations (Broadbent 1958, Monsell 2003, Rensink et al. 1997, O'Regan et al. 1999)
+- Added expected result patterns for each task
+- Added "so what?" conclusion connecting to agent architectures and code review
+- Committed and pushed (c7d62ec)
+
+## Cycle 10 — IMPLEMENT (07:45 UTC)
+
+**Completed:**
+- CLAUDE.md updated with final 4 tasks table, archived 4 noted
+- STRUCTURE.md rewritten for current repo layout
+- README.md created with project overview and task table
+- .gitignore added, all untracked files committed
+- Committed and pushed (0ded657)
+
+## Cycle 11 — EVALUATE (08:00 UTC)
+
+**Final quality gate — grades:**
+| Area | Grade |
+|---|---|
+| Writeup | A- (1,386 words, all sections, real citations) |
+| README | B+ (functional, needs cover image) |
+| Notebooks | A (all validated, correct structure) |
+| Docs | A- (all 4 present, consistent format) |
+| Repo | B (clean remote, some local stale files) |
+
+**Sole blocker:** 5 [PLACEHOLDER] markers in writeup need real Kaggle results.
+
+## Cycle 12 — WRAP-UP (08:15 UTC)
+
+### Session Summary
+
+**11 cycles completed** (of 16 planned). Stopped early — all available work is done. Remaining work requires user action (Kaggle linking + runs).
+
+### What was accomplished
+
+1. **Strategy:** Analyzed all 8 tasks against competition criteria. Cut to 4 strongest tasks.
+2. **Quality:** Audited all 8 notebooks. Fixed scoring bugs in change_blindness and mudsplash. Fixed eval item count in noise_filtering (36→180). Fixed scoring edge cases in context_switching.
+3. **Mudsplash improvement:** Restructured task-relevant disruptors from random to passage-matched with embedded changed values — genuine semantic interference.
+4. **Documentation:** Created docs for all 4 final tasks. Design reviews for all 4.
+5. **Writeup:** 1,386-word draft with cognitive science citations, expected results, and "so what?" framing.
+6. **Repo:** README, updated CLAUDE.md, cleaned STRUCTURE.md, .gitignore, all files committed.
+7. **Validation:** All 4 notebooks pass parse/import/data-gen checks. 295 total items.
+8. **Artifacts:** Competition strategy, Kaggle linking guide, notebook audit, validation report, final review.
+
+### What the user needs to do
+
+**Must-do (in order):**
+1. Create 4 Kaggle Benchmark Tasks at https://www.kaggle.com/benchmarks/tasks/new
+2. For each, File → Link to GitHub → select the notebook:
+   - `tasks/noise_filtering/noise_filtering.ipynb`
+   - `tasks/context_switching/context_switching.ipynb`
+   - `tasks/change_blindness/change_blindness.ipynb` (re-link — path changed)
+   - `tasks/mudsplash/mudsplash.ipynb`
+3. Run all 4 and wait for results
+4. Run `/gt-kaggle-benchmarks-task-review <task_name>` for each to pull and analyze results
+5. Fill in the 5 [PLACEHOLDER] markers in writeup.md with real data
+6. Create a Benchmark grouping all 4 tasks
+7. Create a cover image for the media gallery
+8. Submit
+
+**See also:** `geno-tools/supercharge/sessions/20260331-0500/artifacts/kaggle_linking_guide.md` for detailed step-by-step.
+
+### Risks
+- Discriminatory power unknown until Kaggle runs complete
+- Writeup has 114 words of headroom — keep placeholder replacements concise
+- If any task shows flat results across models, may need to iterate on that task's design

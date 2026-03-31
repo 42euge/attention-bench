@@ -38,9 +38,24 @@ Kaggle Benchmarks has two entities:
 
 We create one Task per notebook, then group them into a single Benchmark.
 
+### Task folder structure
+
+Each task lives in its own folder under `tasks/`:
+
+```
+tasks/<task_name>/
+├── <task_name>.ipynb    # The benchmark notebook (linked to Kaggle)
+├── docs/                # Task documentation, expected results
+├── results/             # Raw outputs from Kaggle runs
+└── review/              # Review files with analysis and next steps
+```
+
+Use `/gt-kaggle-benchmarks-task-generate` to scaffold a new task.
+Use `/gt-kaggle-benchmarks-task-review` to pull and review results from Kaggle.
+
 ### Task notebooks must be self-contained
 
-Each notebook in `tasks/` is a standalone Kaggle kernel. It must:
+Each notebook in `tasks/<task_name>/` is a standalone Kaggle kernel. It must:
 - Generate its own data inline (fixed seed for reproducibility)
 - Define its own helper functions (parsing, answer checking)
 - Define exactly one `@kbench.task` function
@@ -61,11 +76,11 @@ Each notebook in `tasks/` is a standalone Kaggle kernel. It must:
 The repo must be public on GitHub. To deploy task notebooks:
 
 1. Create a Task at https://www.kaggle.com/benchmarks/tasks/new
-2. In the Kaggle notebook editor: **File → Link to GitHub** → select the notebook from `42euge/attention-bench`
+2. In the Kaggle notebook editor: **File → Link to GitHub** → select `tasks/<task_name>/<task_name>.ipynb` from `42euge/attention-bench`
 3. To pull updates after pushing to GitHub: **File → Link to GitHub** again — it detects new commits and offers to pull
 
 The `kaggle kernels push` CLI uploads to Kaggle **Code** (regular notebooks), NOT to Benchmarks. Do not use it for benchmark tasks.
 
 ### Passage style
 
-Keep passages short and everyday (bakery, bridge, farm — not dense scientific text). A human should be able to read a passage and verify the change in under 10 seconds.
+Prefer code and engineering content (code snippets, tickets, specs) over prose. A human should be able to read a passage and verify the change in under 10 seconds.

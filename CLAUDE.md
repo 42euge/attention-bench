@@ -27,3 +27,31 @@ Prior research notes for this track and related ideas are in:
 - Tasks must have verifiably correct answers (no ambiguity)
 - Must show discriminatory power: a meaningful gradient of performance across models
 - Answer the question: "What can this benchmark tell us about model behavior that we could not see before?"
+
+## Architecture
+
+### Kaggle Benchmarks structure
+
+Kaggle Benchmarks has two entities:
+- **Tasks** — individual evaluation notebooks, each with a `@kbench.task` decorator
+- **Benchmarks** — collections of tasks grouped together
+
+We create one Task per notebook, then group them into a single Benchmark.
+
+### Task notebooks must be self-contained
+
+Each notebook in `tasks/` is a standalone Kaggle kernel. It must:
+- Generate its own data inline (fixed seed for reproducibility)
+- Define its own helper functions (parsing, answer checking)
+- Define exactly one `@kbench.task` function
+- Run `.evaluate(llm=kbench.llm, evaluation_data=df)` against the default model
+- Include analysis/plotting at the end
+
+**Do NOT** create shared libraries, external data dependencies, or combined benchmark notebooks. Each task notebook must run independently on Kaggle with zero external files.
+
+### What NOT to create
+
+- No `src/` modules or shared code — inline everything per notebook
+- No combined "master" benchmark notebook — Kaggle groups tasks into benchmarks via the UI
+- No `notebooks/` directory — all task notebooks live in `tasks/`
+- No external JSON data files that notebooks depend on — generate data inline

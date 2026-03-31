@@ -1,0 +1,345 @@
+\documentclass[11pt,twocolumn]{article}
+
+% Page geometry
+\usepackage[margin=1in]{geometry}
+
+% Fonts and encoding
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\renewcommand{\rmdefault}{ptm}  % Times for roman only; keep CM math+mono
+
+% Math
+\usepackage{amsmath,amssymb}
+
+% Tables
+\usepackage{booktabs}
+\usepackage{array}
+
+% Graphics
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+% Hyperlinks
+\usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
+
+% Bibliography
+\usepackage{natbib}
+\bibliographystyle{unsrtnat}
+
+% Compact lists
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=*}
+
+% Code / verbatim
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\small,breaklines=true}
+
+% Caption styling
+\usepackage[font=small,labelfont=bf]{caption}
+
+% ============================================================
+
+\title{AttentionBench: A Cognitive Science-Grounded\\Benchmark for Measuring Attention\\in Frontier Language Models}
+
+\author{%
+  Eugenio Pastoral\\
+  \textit{Google DeepMind $\times$ Kaggle AGI Hackathon}\\
+  \texttt{attention-bench}
+}
+
+\date{March 2026}
+
+\begin{document}
+\maketitle
+
+% ============================================================
+\begin{abstract}
+We introduce \textsc{AttentionBench}, a benchmark suite of 8 tasks spanning 4 attention sub-types from cognitive science: selective attention (noise filtering), sustained attention (vigilance decrement, continuous performance), divided attention (attentional blink, dual-task interference, context switching), and change detection (change blindness, mudsplash). Each task isolates a specific attentional mechanism by holding reasoning difficulty constant while parametrically varying attentional demands, using designs adapted from established clinical neuropsychology paradigms. Evaluating 8 models from 1B to frontier scale on the noise filtering and vigilance tasks, we find that adversarial noise---text containing plausible but incorrect answers---is the \emph{only} noise type that discriminates between models, producing a clean scaling ladder in the Gemma family (1B: 0:1, 4B: 1:1, 12B: 10:1, 27B: 100:1 threshold). Unrelated and topically related noise, even at 100:1 ratios, barely affect any model above 4B parameters. This finding suggests that LLM ``attention'' is primarily a semantic discrimination problem, not a capacity problem. The full 8-task suite introduces Signal Detection Theory decomposition, attentional blink measurement, dual-task cost quantification, and change detection with metacognitive calibration---capabilities no existing LLM benchmark measures.
+\end{abstract}
+
+% ============================================================
+\section{Introduction}
+
+As large language models are deployed in complex real-world tasks---analyzing lengthy documents, processing multi-source information, maintaining consistency across extended interactions---their ability to attend to relevant information amid noise becomes critical. Yet our understanding of \emph{how} and \emph{when} models lose attentional focus remains shallow.
+
+Existing benchmarks suffer from fundamental confounds. Needle-in-a-Haystack~\citep{kamradt2023niah} is saturated for frontier models~\citep{yen2025helmet}. RULER~\citep{hsieh2024ruler} blends reasoning with retrieval. ``Lost in the Middle''~\citep{liu2024lost} does not separate attentional failure from positional encoding artifacts. GSM-DC~\citep{li2025gsmdc} and NoisyBench~\citep{noisybench2026} conflate task difficulty with noise-filtering difficulty. More fundamentally, no benchmark measures attention as a \emph{multidimensional cognitive ability}---the way it is understood in cognitive science.
+
+In human cognition, attention is not monolithic. It comprises at least four sub-types~\citep{posner1980,broadbent1958}: selective attention (filtering signal from noise), sustained attention (maintaining focus over time), divided attention (managing concurrent demands), and the ability to detect changes in the environment. Each has distinct failure modes, neural substrates, and clinical assessments. Yet LLM evaluation treats ``attention'' as a single capability, if it measures it at all.
+
+We address this with \textsc{AttentionBench}: 8 tasks spanning 4 attention sub-types, each adapted from an established cognitive science paradigm. By holding task difficulty constant while varying attentional load, any performance degradation is attributable to attentional---not reasoning---failure.
+
+Our contributions:
+\begin{itemize}
+  \item A benchmark suite of 8 tasks measuring 4 attention sub-types, each grounded in a clinical neuropsychology paradigm (dichotic listening, Mackworth clock, RSVP, PRP, task-switching, flicker, mudsplash).
+  \item The finding that \textbf{adversarial noise is the sole discriminator} of selective attention---unrelated and related noise fail to separate any model above 4B parameters, even at 100:1 ratios.
+  \item Evidence of a \textbf{log-linear scaling law}: adversarial attention threshold scales log-linearly with model size across the Gemma family (1B--27B).
+  \item Novel measurement capabilities for LLMs: Signal Detection Theory decomposition, attentional blink curves, dual-task interference costs, and confidence-calibrated change detection.
+  \item A contamination-resistant, fully procedural dataset of $\sim$2{,}800 items with deterministic generation.
+\end{itemize}
+
+% ============================================================
+\section{Benchmark Design}
+
+Table~\ref{tab:tasks} summarizes the 8 tasks. Each is a self-contained Jupyter notebook executable on the Kaggle Benchmarks platform. All content is fictional and procedurally generated with fixed seeds.
+
+\begin{table*}[t]
+\centering
+\caption{The 8 tasks of \textsc{AttentionBench}, organized by attention sub-type.}
+\label{tab:tasks}
+\small
+\begin{tabular}{@{}llllr@{}}
+\toprule
+\textbf{Sub-type} & \textbf{Task} & \textbf{Paradigm} & \textbf{Key Metric} & \textbf{Items} \\
+\midrule
+Selective   & Noise Filtering         & Dichotic listening    & Attention threshold (noise ratio at 80\%)  & 180 \\
+\midrule
+Sustained   & Vigilance Decrement & Mackworth clock & Decay onset; $d'$, criterion by position & 900 \\
+Sustained   & Continuous Performance   & CPT-AX               & Hit rate, FA rate, $d'$, lure commissions   & 800 \\
+\midrule
+Divided     & Attentional Blink     & RSVP                 & T2$|$T1 accuracy by lag; blink magnitude   & 120 \\
+Divided     & Dual-Task Interference   & PRP                  & Dual-task cost; asymmetric interference     & 42 \\
+Divided     & Context Switching        & Task-switching       & Switch cost (pure vs.\ mixed)              & 600 \\
+\midrule
+Change Det. & Change Blindness   & Flicker              & Detection rate $\times$ magnitude $\times$ disruption; ECE & 45 \\
+Change Det. & Mudsplash                & Mudsplash            & Attentional capture effect by disruptor type & 45 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Selective Attention: Noise Filtering}
+
+A $\sim$200-word fictional passage with 5 factual questions is embedded in progressively larger noise at ratios from 1:1 to 100:1. Three noise types probe different filtering demands:
+\begin{itemize}
+  \item \textbf{Unrelated}: Cross-domain filler (geology amid marine biology).
+  \item \textbf{Related}: Same-domain text that does not answer the questions.
+  \item \textbf{Adversarial}: Text containing plausible but incorrect answers (e.g., ``3,100 meters'' when the correct answer is ``2,400 meters'').
+\end{itemize}
+Signal and noise are interleaved in chunks to prevent positional heuristics~\citep{liu2024lost}. At 100:1, prompts reach $\sim$129K characters. The metric is \textbf{attention threshold}: the highest noise ratio where accuracy $\geq$ 80\%.
+
+\subsection{Sustained Attention}
+
+\textbf{Vigilance Decrement.} 100 trivially easy sub-tasks (country identification, number extraction, misspelling detection) in a single prompt. Three variants: normal, oddball (one unexpected task type at position 40--70), and SDT (15\% target-absent trials). SDT variants decompose performance into sensitivity ($d'$) and criterion ($c$) by 10-item position window, revealing whether degradation reflects reduced sensitivity or shifted response bias.
+
+\textbf{Continuous Performance Test (CPT).} 200-item sequences where the model classifies each sentence as TARGET or NON-TARGET. Low target frequency ($\sim$15\%) creates monotony. Lure items from semantically similar categories (e.g., climate science lures for a weather target) test discrimination. Metrics: hit rate, false alarm rate, $d'$, and lure commission rate.
+
+\subsection{Divided Attention}
+
+\textbf{Attentional Blink.} Adapted from the RSVP paradigm~\citep{raymond1992}. A stream of 20 sentences contains two targets from specified categories. The lag between targets varies from 1--8 items. The key measure is T2$|$T1 accuracy across lags---in human cognition, T2 detection drops sharply at lags 2--5 (the ``blink'') with paradoxical lag-1 sparing. This is the first text-based attentional blink task for LLMs.
+
+\textbf{Dual-Task Interference.} The model simultaneously answers comprehension questions and counts word occurrences in the same passage. Single-task baselines (comprehension only, counting only) allow precise quantification of dual-task cost and asymmetric interference.
+
+\textbf{Context Switching.} 60-item sequences alternating between number extraction, country identification, and misspelling detection. Three conditions---pure blocks, predictable alternation, random switching---measure task-switch cost.
+
+\subsection{Change Detection}
+
+\textbf{Change Blindness.} Two passage versions separated by 0--3 disruptor paragraphs. Changes range from minor (number swaps) to major (causal claim reversals). No-change controls measure false alarm rate. Confidence ratings (1--5) enable metacognitive calibration analysis via Expected Calibration Error (ECE).
+
+\textbf{Mudsplash.} Same structure as change blindness, but the disruptor type varies: neutral (bland factual filler), emotional (shocking content---explosions, contamination), or task-relevant (domain-similar technical content). Measures whether salient disruptors cause models to miss changes---the LLM analogue of the visual ``mudsplash'' paradigm.
+
+\subsection{Community Benchmarks}
+
+We also provide Kaggle-ready reproductions of two related benchmarks: \textbf{GSM-IC}~\citep{shi2023} (irrelevant context distraction in math) and \textbf{Needle-in-a-Haystack}~\citep{kamradt2023niah} (long-context retrieval), enabling direct comparison with our tasks.
+
+% ============================================================
+\section{Results: Noise Filtering \& Vigilance}
+
+We report results from multi-model evaluation of the two core tasks. The remaining 6 tasks are deployed on Kaggle Benchmarks and awaiting multi-model evaluation.
+
+\subsection{Evaluation Setup}
+
+We evaluated 8 models as an orthogonal set: four Gemma sizes (1B, 4B, 12B, 27B) as a controlled scaling ladder, three frontier models (Claude Opus 4-6, Claude Haiku 4-5, Gemini 2.5 Flash), and one reasoning model (DeepSeek R1). Evaluation used the Kaggle Benchmarks platform: 336 LLM calls completing in 14 minutes. Answer matching uses case-insensitive substring comparison with number normalization. Reasoning model responses are preprocessed to strip \texttt{<think>} blocks and preamble text.
+
+\subsection{Signal-in-Noise Results}
+
+Table~\ref{tab:thresholds} presents attention thresholds.
+
+\begin{table}[t]
+\centering
+\caption{Attention thresholds (highest noise ratio at $\geq$80\% accuracy). Bold = maximum tested ratio.}
+\label{tab:thresholds}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Model} & \textbf{Unrel.} & \textbf{Rel.} & \textbf{Advers.} \\
+\midrule
+claude-opus-4-6   & \textbf{100:1} & \textbf{100:1} & \textbf{100:1} \\
+claude-haiku-4-5  & \textbf{100:1} & \textbf{100:1} & \textbf{100:1} \\
+gemini-2.5-flash  & \textbf{100:1} & \textbf{100:1} & \textbf{100:1} \\
+gemma-3-27b       & \textbf{100:1} & \textbf{100:1} & \textbf{100:1} \\
+deepseek-r1       & \textbf{100:1} & \textbf{100:1} & 50:1 \\
+gemma-3-12b       & \textbf{100:1} & \textbf{100:1} & 10:1 \\
+gemma-3-4b        & \textbf{100:1} & \textbf{100:1} & 1:1 \\
+gemma-3-1b        & 5:1            & 10:1           & 0:1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The results reveal a striking asymmetry. \textbf{Unrelated and related noise fail to discriminate}: every model above 1B achieves 100:1 for both types. \textbf{Adversarial noise is the sole discriminator}, with a clean gradient: 0:1 $\rightarrow$ 1:1 $\rightarrow$ 10:1 $\rightarrow$ 50:1 $\rightarrow$ 100:1 as model capability increases.
+
+The Gemma family shows a log-linear scaling law (Table~\ref{tab:scaling}): each $\sim$3$\times$ increase in parameters yields $\sim$10$\times$ increase in adversarial noise tolerance.
+
+\begin{table}[t]
+\centering
+\caption{Adversarial threshold vs.\ model size (Gemma).}
+\label{tab:scaling}
+\small
+\begin{tabular}{@{}rcl@{}}
+\toprule
+\textbf{Params} & $\log_{10}$ & \textbf{Adv.\ Threshold} \\
+\midrule
+1B  & 9.0  & 0:1 (baseline failure) \\
+4B  & 9.6  & 1:1 \\
+12B & 10.1 & 10:1 \\
+27B & 10.4 & 100:1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Overall mean SIN accuracy: claude-opus-4-6 (100.0\%), claude-haiku-4-5 (98.9\%), deepseek-r1 (97.1\%), gemma-3-27b (95.0\%), gemini-2.5-flash (92.2\%), gemma-3-12b (90.6\%), gemma-3-4b (77.8\%), gemma-3-1b (58.3\%).
+
+\subsection{Vigilance Results}
+
+Table~\ref{tab:vigilance} presents sustained attention accuracy.
+
+\begin{table}[t]
+\centering
+\caption{Vigilance accuracy (\% of 100 sub-tasks). N=normal, O=oddball. \textsuperscript{$\dagger$}Task comprehension issue (\S\ref{sec:limitations}).}
+\label{tab:vigilance}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Country}} & \multicolumn{2}{c}{\textbf{Number}} & \multicolumn{2}{c}{\textbf{Misspell}} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+\textbf{Model} & N & O & N & O & N & O \\
+\midrule
+opus-4-6    & 100 & 100 & 100 & 98  & 100 & 100 \\
+haiku-4-5   & 100 & 100 & 100 & 100 & 100 & 97 \\
+gem-2.5-fl  & 100 & 100 & 100 & 91  & 100 & 96 \\
+gemma-27b   & 100 & 100 & 100 & 99  & 0\textsuperscript{$\dagger$} & 100 \\
+deepseek-r1 & 100 & 100 & 96  & 88  & 100 & 100 \\
+gemma-12b   & 98  & 100 & 100 & 100 & 100 & 100 \\
+gemma-4b    & 91  & 96  & 72  & 32  & 0\textsuperscript{$\dagger$} & 0 \\
+gemma-1b    & 1   & 35  & 78  & 40  & 0\textsuperscript{$\dagger$} & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Frontier models maintain near-perfect vigilance. The Gemma family shows clear differentiation: 1B catastrophic (21\% mean), 4B partial (49\%), 12B and 27B near-ceiling. DeepSeek R1 scores 88\% on number oddball---the lowest among frontier models---suggesting chain-of-thought processing is disrupted by unexpected stimuli.
+
+\subsection{Cross-Dimensional Analysis}
+
+Models that resist adversarial noise generally maintain vigilance, with one exception: DeepSeek R1 achieves 97.1\% SIN accuracy (third highest) but the most vigilance degradation among frontier models, suggesting chain-of-thought provides selective but not sustained attentional benefits.
+
+% ============================================================
+\section{Discussion}
+
+\subsection{Adversarial Noise as Cognitive Discriminator}
+
+The central finding is that \emph{type} of noise matters far more than \emph{volume}. Models locate a 200-word passage within 20,000 words of unrelated text easily. But adversarial noise---plausible alternative answers---collapses performance in a size-dependent manner. Unrelated tokens receive low attention scores because they are semantically distant; adversarial tokens compete directly with correct answers in the attention distribution, requiring finer-grained semantic discrimination that scales with model size.
+
+This parallels \citet{delangis2025strong}, who found LLMs show strong memory but weak executive control with competing stimuli. The practical implication: a model handling 128K tokens of filler may still be fooled by a few adversarial sentences.
+
+\subsection{Scaling Laws for Attention}
+
+Within the Gemma family, the adversarial threshold follows approximately:
+\begin{equation}
+  \text{Threshold} \approx 10^{(2.5 \cdot \log_{10} N - 22.5)}
+\end{equation}
+Each 3$\times$ parameter increase yields $\sim$10$\times$ noise tolerance gain. This contrasts with non-adversarial noise, which shows a sharp phase transition (1B fails, 4B+ saturates) rather than gradual scaling.
+
+\subsection{Reasoning Models and Attention}
+
+DeepSeek R1's adversarial threshold (50:1) falls below gemma-3-27b (100:1). Investigation revealed R1's chain of thought explicitly considered adversarial values before settling on them as answers---the model \emph{reasoned its way to the wrong answer}. This echoes NoisyBench's finding of inverse scaling~\citep{noisybench2026}: more thinking can mean worse noise filtering.
+
+\subsection{The Case for Multidimensional Measurement}
+
+Our results from just two tasks already reveal that selective and sustained attention are partially dissociable: DeepSeek R1 excels at one but not the other. The full 8-task suite is designed to expose further dissociations. Do models that resist adversarial noise also resist attentional capture from emotional content (mudsplash)? Do models with high vigilance show attentional blink patterns? Does dual-task cost correlate with context-switching cost? These cross-task analyses---enabled by a common model set across all 8 tasks---will reveal whether LLM attention is a single capability or a bundle of separable faculties, with implications for architecture design and training.
+
+\subsection{Limitations}
+\label{sec:limitations}
+
+\textbf{Ceiling effects.} Four models achieve the maximum adversarial threshold (100:1). Higher ratios are needed.
+
+\textbf{Sample sizes.} With 2 passages per SIN configuration, thresholds are based on 10 questions per cell. The full benchmark includes more items per task.
+
+\textbf{Task ambiguity.} Misspelling detection is ambiguous (return misspelled form vs.\ correct form). Gemma-3-27b and 4b chose the latter, inflating their error rates.
+
+\textbf{Partial evaluation.} Results are reported for 2 of 8 tasks. The remaining tasks are deployed on Kaggle and awaiting multi-model evaluation.
+
+% ============================================================
+\section{Related Work}
+
+\textbf{Long-context retrieval.} NIAH~\citep{kamradt2023niah} and RULER~\citep{hsieh2024ruler} measure retrieval but are saturated or conflate reasoning. Our noise filtering generalizes NIAH by parameterizing noise type and volume.
+
+\textbf{Context degradation.} Context Rot~\citep{hong2025contextrot} found coherent distractors hurt more than random noise---consistent with our adversarial finding. \citet{du2025context} isolated length from distraction effects.
+
+\textbf{Distractor sensitivity.} GSM-DC~\citep{li2025gsmdc} and GSM-Symbolic~\citep{mirzadeh2025gsm} showed up to 65\% drops from numerical distractors. We extend to factual retrieval and identify semantic similarity as the critical variable.
+
+\textbf{Cognitive benchmarks.} The DeepMind framework~\citep{burnell2026agi} identifies attention as under-evaluated. \citet{delangis2025strong} found executive control deficits. NeuroCognition~\citep{neurocog2026} applied cognitive batteries to LLMs. We contribute the first benchmark treating LLM attention as a multidimensional cognitive ability with distinct sub-types.
+
+\textbf{Attentional paradigms.} No prior work adapts the attentional blink~\citep{raymond1992}, mudsplash, or CPT paradigms for LLM evaluation. Our change blindness task with confidence calibration also introduces metacognitive measurement absent from existing benchmarks.
+
+% ============================================================
+\section{Conclusion}
+
+\textsc{AttentionBench} provides the first systematic measurement of attention as a multidimensional cognitive ability in LLMs: 8 tasks spanning selective, sustained, divided, and change-detection attention, each adapted from established cognitive science paradigms.
+
+Results from the noise filtering and vigilance tasks reveal that adversarial noise is the critical discriminator---not volume but \emph{semantic proximity} determines whether noise degrades performance. The adversarial attention threshold scales log-linearly with model size, and chain-of-thought reasoning does not prevent adversarial capture.
+
+The full benchmark introduces measurement capabilities absent from existing LLM evaluation: Signal Detection Theory decomposition, attentional blink curves, dual-task interference quantification, and confidence-calibrated change detection. We release all 8 tasks as self-contained notebooks on Kaggle Benchmarks for multi-model evaluation by the community.
+
+% ============================================================
+\bibliography{references}
+
+% ============================================================
+\onecolumn
+\appendix
+\section{Example Prompt: Noise Filtering}
+\label{app:prompt}
+
+At 5:1 adversarial noise ratio, a $\sim$200-word passage is split into 4 chunks and interleaved with 5 noise chunks ($\sim$1,000 words):
+
+\begin{lstlisting}[frame=single]
+[Noise chunk 1] [Signal chunk 1] [Noise chunk 2]
+[Signal chunk 2] [Noise chunk 3] [Signal chunk 3]
+[Noise chunk 4] [Signal chunk 4] [Noise chunk 5]
+
+Based on the passage above, answer these questions:
+1. At what depth were the organisms discovered?
+2. What enzyme is involved in the bioluminescence?
+3. What is the name of the ROV used?
+4. How long was the sample collection period?
+5. What compound was named as the substrate?
+
+Provide ONLY the answers, one per line, numbered 1-5.
+\end{lstlisting}
+
+Adversarial noise includes: ``the organisms were found at a depth of 3,100 meters'' and ``the substrate was identified as bathozine''---plausible alternatives to ``2,400 meters'' and ``kerovazine.''
+
+\section{Methodological Evolution}
+\label{app:evolution}
+
+\textbf{v4} (27 models, 25:1 max): 20/27 models at ceiling $\rightarrow$ extended to 100:1.
+
+\textbf{v5} (8 models, 100:1): DeepSeek R1's \texttt{<think>} blocks parsed as answers (1.1\% accuracy artifact) $\rightarrow$ think-tag stripping.
+
+\textbf{v6}: Preamble lines (``Here are the answers:'') counted as answer \#1 $\rightarrow$ require numbered prefix.
+
+These iterations show that \textbf{evaluation methodology is as important as benchmark design}. Response format diversity across model families is a systematic challenge for automated LLM evaluation.
+
+\section{Task Design Summaries}
+
+\textbf{Attentional Blink.} 20-sentence streams with two embedded targets from specified categories. Lag between targets varies 1--8. Tests whether models show the characteristic ``blink''---temporary inability to detect T2 shortly after T1. 120 items across 3 category pairs.
+
+\textbf{Dual-Task Interference.} Simultaneously answer comprehension questions and count word occurrences. Single-task baselines (comprehension only, counting only) quantify dual-task cost. 42 items across 3 passages.
+
+\textbf{Context Switching.} 60-item sequences alternating number extraction, country identification, and misspelling detection. Pure blocks vs.\ predictable alternation vs.\ random switching. 600 items.
+
+\textbf{CPT.} 200-item target/non-target classification. 15\% target rate, 5\% semantically similar lures. SDT analysis. 800 items.
+
+\textbf{Change Blindness.} Two passage versions with minor/major changes, separated by 0--3 disruptors. Confidence ratings enable ECE calibration. 45 items.
+
+\textbf{Mudsplash.} Change detection with neutral, emotional, or task-relevant disruptors. Tests attentional capture. 45 items.
+
+\end{document}

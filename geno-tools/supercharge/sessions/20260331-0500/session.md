@@ -86,3 +86,29 @@ Cut: attentional_blink (no temporal bottleneck), dual_task_interference (thin da
 4. ✅ Mudsplash — passage-matched disruptors with embedded changed values
 
 **Next priority:** All 4 need Kaggle runs. User must manually create Tasks and link notebooks via File → Link to GitHub. Preparing everything to make that as easy as possible.
+
+## Cycle 8 — EVALUATE (07:20 UTC)
+
+**Validation results — all 4 pass:**
+| Task | Items | Timestamp | Ready |
+|------|-------|-----------|-------|
+| noise_filtering | 180 | 2026-03-31 05:30 UTC | YES |
+| context_switching | 25 (×60 sub-items) | 2026-03-31 05:30 UTC | YES |
+| change_blindness | 45 | 2026-03-31 04:59 UTC | YES |
+| mudsplash | 45 | 2026-03-31 05:30 UTC | YES |
+
+Total: 295 top-level items. All notebooks parse, generate data, and import correctly.
+
+**Sprint 2 complete.** All 4 final tasks are polished and validated.
+
+---
+
+## Sprint 3 — Polish and Prepare (cycles 9-12)
+
+**Blocker:** Kaggle results require user to manually link notebooks. Can't proceed with results-dependent work.
+
+**Available work:**
+- Cycle 9: Writeup quality pass — strengthen the narrative, add more cognitive science depth
+- Cycle 10: Create media assets (competition requires cover image)
+- Cycle 11: Final end-to-end review of everything
+- Cycle 12: Update CLAUDE.md, clean up repo, prepare summary for user

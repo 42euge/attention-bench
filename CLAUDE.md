@@ -28,6 +28,17 @@ Prior research notes for this track and related ideas are in:
 - Must show discriminatory power: a meaningful gradient of performance across models
 - Answer the question: "What can this benchmark tell us about model behavior that we could not see before?"
 
+## Final Tasks
+
+The benchmark has 4 active tasks (the other 4 -- attentional_blink, continuous_performance, dual_task_interference, vigilance_decrement -- are archived):
+
+| Task | What it tests |
+|---|---|
+| **noise_filtering** | Can the model answer questions about a passage buried in increasing amounts of irrelevant text? (selective attention) |
+| **context_switching** | Does switching between task types within a sequence reduce accuracy? (task-switch cost) |
+| **change_blindness** | Can the model spot what changed between two versions of a passage separated by filler? |
+| **mudsplash** | Does emotionally salient or confusing content between two passage versions cause the model to miss factual changes? |
+
 ## Architecture
 
 ### Kaggle Benchmarks structure
@@ -83,7 +94,7 @@ The `kaggle kernels push` CLI uploads to Kaggle **Code** (regular notebooks), NO
 
 ### Passage style
 
-Prefer code and engineering content (code snippets, tickets, specs) over prose. A human should be able to read a passage and verify the change in under 10 seconds.
+Passages vary by task. noise_filtering and mudsplash use fictional scientific/technical passages; change_blindness uses code snippets and engineering specs. A human should be able to read a passage and verify the answer or change in under 10 seconds.
 
 ### Change tracking
 

@@ -1,0 +1,258 @@
+{
+  "nodes": [
+    {
+      "id": "root",
+      "type": "file",
+      "file": "geno-tools/docs/research/Research Overview.md",
+      "x": 400,
+      "y": 0,
+      "width": 400,
+      "height": 200,
+      "color": "0"
+    },
+    {
+      "id": "lit-index",
+      "type": "file",
+      "file": "geno-tools/docs/research/literature/Literature Index.md",
+      "x": 900,
+      "y": 0,
+      "width": 350,
+      "height": 200,
+      "color": "0"
+    },
+    {
+      "id": "selective-l0",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/selective-attention/Selective Attention.md",
+      "x": -200,
+      "y": 300,
+      "width": 350,
+      "height": 180,
+      "color": "1"
+    },
+    {
+      "id": "sustained-l0",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/sustained-attention/Sustained Attention.md",
+      "x": 200,
+      "y": 300,
+      "width": 350,
+      "height": 180,
+      "color": "2"
+    },
+    {
+      "id": "divided-l0",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/divided-attention/Divided Attention.md",
+      "x": 600,
+      "y": 300,
+      "width": 350,
+      "height": 180,
+      "color": "4"
+    },
+    {
+      "id": "change-l0",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/change-detection/Change Detection.md",
+      "x": 1000,
+      "y": 300,
+      "width": 350,
+      "height": 180,
+      "color": "5"
+    },
+    {
+      "id": "sel-l1-snf",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/selective-attention/Signal-to-Noise Filtering.md",
+      "x": -300,
+      "y": 580,
+      "width": 300,
+      "height": 160,
+      "color": "1"
+    },
+    {
+      "id": "sel-l1-dr",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/selective-attention/Distractor Robustness.md",
+      "x": -0,
+      "y": 580,
+      "width": 300,
+      "height": 160,
+      "color": "1"
+    },
+    {
+      "id": "sus-l1-vd",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/sustained-attention/Vigilance Decrement.md",
+      "x": 100,
+      "y": 580,
+      "width": 300,
+      "height": 160,
+      "color": "2"
+    },
+    {
+      "id": "sus-l1-pb",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/sustained-attention/Positional Bias.md",
+      "x": 300,
+      "y": 580,
+      "width": 300,
+      "height": 160,
+      "color": "2"
+    },
+    {
+      "id": "div-l1-bt",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/divided-attention/Bottleneck Theory.md",
+      "x": 550,
+      "y": 580,
+      "width": 300,
+      "height": 160,
+      "color": "4"
+    },
+    {
+      "id": "div-l1-ab",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/divided-attention/Attentional Blink.md",
+      "x": 700,
+      "y": 580,
+      "width": 300,
+      "height": 160,
+      "color": "4"
+    },
+    {
+      "id": "div-l1-dti",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/divided-attention/Dual-Task Interference.md",
+      "x": 850,
+      "y": 580,
+      "width": 300,
+      "height": 160,
+      "color": "4"
+    },
+    {
+      "id": "chg-l1-tcb",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/change-detection/Textual Change Blindness.md",
+      "x": 1000,
+      "y": 580,
+      "width": 300,
+      "height": 160,
+      "color": "5"
+    },
+    {
+      "id": "chg-l1-de",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/change-detection/Disruption Effects.md",
+      "x": 1150,
+      "y": 580,
+      "width": 300,
+      "height": 160,
+      "color": "5"
+    },
+    {
+      "id": "sel-l2-an",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/selective-attention/Adversarial Noise.md",
+      "x": -200,
+      "y": 840,
+      "width": 300,
+      "height": 160,
+      "color": "1"
+    },
+    {
+      "id": "sus-l1-ma",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/sustained-attention/Monotony and Automaticity.md",
+      "x": 200,
+      "y": 840,
+      "width": 300,
+      "height": 160,
+      "color": "2"
+    },
+    {
+      "id": "chg-l2-cm",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/change-detection/Change Magnitude.md",
+      "x": 1050,
+      "y": 840,
+      "width": 300,
+      "height": 160,
+      "color": "5"
+    },
+    {
+      "id": "sel-l3-nft",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/selective-attention/Noise Filtering Task.md",
+      "x": -200,
+      "y": 1100,
+      "width": 300,
+      "height": 160,
+      "color": "6"
+    },
+    {
+      "id": "sus-l3-vdt",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/sustained-attention/Vigilance Decrement Task.md",
+      "x": 200,
+      "y": 1100,
+      "width": 300,
+      "height": 160,
+      "color": "6"
+    },
+    {
+      "id": "div-l3-abt",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/divided-attention/Attentional Blink Task.md",
+      "x": 600,
+      "y": 1100,
+      "width": 300,
+      "height": 160,
+      "color": "6"
+    },
+    {
+      "id": "div-l3-dtit",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/divided-attention/Dual-Task Interference Task.md",
+      "x": 800,
+      "y": 1100,
+      "width": 300,
+      "height": 160,
+      "color": "6"
+    },
+    {
+      "id": "chg-l3-cbt",
+      "type": "file",
+      "file": "geno-tools/docs/research/tracks/change-detection/Change Blindness Task.md",
+      "x": 1050,
+      "y": 1100,
+      "width": 300,
+      "height": 160,
+      "color": "6"
+    }
+  ],
+  "edges": [
+    {"id": "e-root-lit", "fromNode": "root", "toNode": "lit-index", "fromSide": "right", "toSide": "left"},
+    {"id": "e-root-sel", "fromNode": "root", "toNode": "selective-l0", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-root-sus", "fromNode": "root", "toNode": "sustained-l0", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-root-div", "fromNode": "root", "toNode": "divided-l0", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-root-chg", "fromNode": "root", "toNode": "change-l0", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-sel-snf", "fromNode": "selective-l0", "toNode": "sel-l1-snf", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-sel-dr", "fromNode": "selective-l0", "toNode": "sel-l1-dr", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-sus-vd", "fromNode": "sustained-l0", "toNode": "sus-l1-vd", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-sus-pb", "fromNode": "sustained-l0", "toNode": "sus-l1-pb", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-div-bt", "fromNode": "divided-l0", "toNode": "div-l1-bt", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-div-ab", "fromNode": "divided-l0", "toNode": "div-l1-ab", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-div-dti", "fromNode": "divided-l0", "toNode": "div-l1-dti", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-chg-tcb", "fromNode": "change-l0", "toNode": "chg-l1-tcb", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-chg-de", "fromNode": "change-l0", "toNode": "chg-l1-de", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-snf-an", "fromNode": "sel-l1-snf", "toNode": "sel-l2-an", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-vd-ma", "fromNode": "sus-l1-vd", "toNode": "sus-l1-ma", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-tcb-cm", "fromNode": "chg-l1-tcb", "toNode": "chg-l2-cm", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-an-nft", "fromNode": "sel-l2-an", "toNode": "sel-l3-nft", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-ma-vdt", "fromNode": "sus-l1-ma", "toNode": "sus-l3-vdt", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-ab-abt", "fromNode": "div-l1-ab", "toNode": "div-l3-abt", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-dti-dtit", "fromNode": "div-l1-dti", "toNode": "div-l3-dtit", "fromSide": "bottom", "toSide": "top"},
+    {"id": "e-cm-cbt", "fromNode": "chg-l2-cm", "toNode": "chg-l3-cbt", "fromSide": "bottom", "toSide": "top"}
+  ]
+}

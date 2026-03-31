@@ -84,3 +84,13 @@ The `kaggle kernels push` CLI uploads to Kaggle **Code** (regular notebooks), NO
 ### Passage style
 
 Prefer code and engineering content (code snippets, tickets, specs) over prose. A human should be able to read a passage and verify the change in under 10 seconds.
+
+### Change tracking
+
+Every time a task notebook is modified, add a timestamp comment to the notebook's first code cell:
+
+```python
+# Last updated: YYYY-MM-DD HH:MM UTC
+```
+
+This lets us verify whether a Kaggle run matches the latest version. The review skill checks this timestamp against the pulled notebook.
